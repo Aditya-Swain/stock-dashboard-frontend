@@ -170,7 +170,7 @@ const CompanyStockDashboard = () => {
 
     const handleCompanySelect = (company) => {
         setSelected(company);
-        setSidebarOpen(false); // Close sidebar on mobile after selection
+        setSidebarOpen(false); 
     };
 
     return (
