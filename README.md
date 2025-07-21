@@ -37,6 +37,10 @@ Not used – live data is fetched using [Yahoo Finance](https://finance.yahoo.co
 
 ---
 
+##  Deployment
+- The fronted is deployed on netlify.com and backend is on render.com 
+
+---
 
 ##  Thought Process
 
