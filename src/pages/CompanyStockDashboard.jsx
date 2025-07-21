@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
-import { TrendingUp, TrendingDown, BarChart3, Search, RefreshCw, Menu, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Search, RefreshCw, Menu, X, Activity, Target, Volume2, Calculator } from 'lucide-react';
 
 // Companies and thier symbols
 const companies = [
@@ -59,6 +59,7 @@ const companies = [
 const CompanyStockDashboard = () => {
     const [selected, setSelected] = useState(companies[0]);
     const [chartData, setChartData] = useState(null);
+    const [stockMetrics, setStockMetrics] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -109,6 +110,14 @@ const CompanyStockDashboard = () => {
                             pointHoverRadius: 6,
                         }
                     ]
+                });
+
+                // Set stock metrics
+                setStockMetrics({
+                    week52High: data['52_week_high'],
+                    week52Low: data['52_week_low'],
+                    avgVolume: data['avg_volume'],
+                    ma20: data['ma_20']
                 });
             } catch (err) {
                 setError(err.message);
@@ -171,6 +180,40 @@ const CompanyStockDashboard = () => {
     const handleCompanySelect = (company) => {
         setSelected(company);
         setSidebarOpen(false); 
+    };
+
+    const formatNumber = (num) => {
+        if (num >= 10000000) {
+            return `${(num / 10000000).toFixed(1)}Cr`;
+        } else if (num >= 100000) {
+            return `${(num / 100000).toFixed(1)}L`;
+        } else if (num >= 1000) {
+            return `${(num / 1000).toFixed(1)}K`;
+        }
+        return num?.toFixed(2) || '0';
+    };
+
+    const MetricCard = ({ icon: Icon, title, value, color = 'blue' }) => {
+        const colorClasses = {
+            blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30 text-blue-400',
+            green: 'from-green-500/20 to-green-600/20 border-green-500/30 text-green-400',
+            purple: 'from-purple-500/20 to-purple-600/20 border-purple-500/30 text-purple-400',
+            orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30 text-orange-400'
+        };
+
+        return (
+            <div className={`bg-gradient-to-r ${colorClasses[color]} border rounded-xl p-4 backdrop-blur-sm`}>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                        <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-white/60 uppercase tracking-wider">{title}</p>
+                        <p className="text-lg font-bold text-white truncate">{value}</p>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -293,9 +336,43 @@ const CompanyStockDashboard = () => {
                     )}
                 </header>
 
-                {/* Chart Content */}
-                <div className="flex-1 p-4 lg:p-6 min-h-0">
-                    <div className="h-full bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4 lg:p-6">
+                {/* Content */}
+                <div className="flex-1 p-4 lg:p-6 min-h-0 overflow-y-auto">
+                    {/* Key Metrics */}
+                    {stockMetrics && !loading && !error && (
+                        <div className="mb-6">
+                            <h2 className="text-lg font-semibold text-white mb-4">Key Metrics</h2>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                <MetricCard
+                                    icon={Activity}
+                                    title="52W High"
+                                    value={`₹${stockMetrics.week52High?.toFixed(2) || '0.00'}`}
+                                    color="green"
+                                />
+                                <MetricCard
+                                    icon={TrendingDown}
+                                    title="52W Low"
+                                    value={`₹${stockMetrics.week52Low?.toFixed(2) || '0.00'}`}
+                                    color="blue"
+                                />
+                                <MetricCard
+                                    icon={Volume2}
+                                    title="Avg Volume"
+                                    value={formatNumber(stockMetrics.avgVolume)}
+                                    color="purple"
+                                />
+                                <MetricCard
+                                    icon={Calculator}
+                                    title="20D MA"
+                                    value={`₹${stockMetrics.ma20?.toFixed(2) || '0.00'}`}
+                                    color="orange"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Chart Content */}
+                    <div className="h-96 lg:h-[500px] bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4 lg:p-6">
                         {loading && (
                             <div className="h-full flex items-center justify-center">
                                 <div className="text-center">
